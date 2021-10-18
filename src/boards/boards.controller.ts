@@ -6,10 +6,13 @@ import {
   Param,
   Patch,
   Post,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
 import { Board, BoardStatus } from './boards.model';
 import { BoardsService } from './boards.service';
 import { CreateBoardDto } from './dto/create-board.dto';
+import { BoardStatusValidationPipe } from './pipes/board-status-validation.pipe';
 
 @Controller('boards')
 export class BoardsController {
@@ -24,6 +27,8 @@ export class BoardsController {
 
   // NOTE: Body로 가져옴
   @Post()
+  //NOTE: 핸들러수준 파이프
+  @UsePipes(ValidationPipe)
   createBoard(@Body() CreateBoardDto: CreateBoardDto): Board {
     // NOTE: 서비스를 가지고온다
     return this.boardsService.createBoard(CreateBoardDto);
@@ -44,7 +49,7 @@ export class BoardsController {
   @Patch('/:id/status')
   updateBoardStatus(
     @Param('id') id: string,
-    @Body('status') status: BoardStatus,
+    @Body('status', BoardStatusValidationPipe) status: BoardStatus,
   ) {
     return this.boardsService.updateBoardStatus(id, status);
   }
