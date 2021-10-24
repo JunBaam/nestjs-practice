@@ -12,6 +12,8 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { GetUser } from 'src/auth/get-user.decorator';
+import { User } from 'src/auth/user.entity';
 import { Board } from './board.entity';
 import { BoardStatus } from './boards-status.enum';
 import { BoardsService } from './boards.service';
@@ -25,16 +27,19 @@ export class BoardsController {
   constructor(private boardsService: BoardsService) {}
 
   @Get('/')
-  getAllBoard(): Promise<Board[]> {
-    return this.boardsService.getAllBoards();
+  getAllBoard(@GetUser() user: User): Promise<Board[]> {
+    return this.boardsService.getAllBoards(user);
   }
 
   @Post()
   //NOTE: 핸들러수준 파이프
   @UsePipes(ValidationPipe) //NOTE: Promise 형식으로 리턴되기떄문에 Promise 지정
-  createBoard(@Body() CreateBoardDto: CreateBoardDto): Promise<Board> {
+  createBoard(
+    @Body() CreateBoardDto: CreateBoardDto,
+    @GetUser() user: User,
+  ): Promise<Board> {
     // NOTE: 서비스를 가지고온다
-    return this.boardsService.createBoard(CreateBoardDto);
+    return this.boardsService.createBoard(CreateBoardDto, user);
   }
 
   @Get('/:id')
@@ -43,8 +48,11 @@ export class BoardsController {
   }
 
   @Delete('/:id') //NOTE: ParseIntPipe : js integer가 number 가 아니면 error를 발생
-  deleteBoard(@Param('id', ParseIntPipe) id): Promise<void> {
-    return this.boardsService.deleteBoard(id);
+  deleteBoard(
+    @Param('id', ParseIntPipe) id,
+    @GetUser() user: User,
+  ): Promise<void> {
+    return this.boardsService.deleteBoard(id, user);
   }
 
   //NOTE: 게시물 상태 업데이트

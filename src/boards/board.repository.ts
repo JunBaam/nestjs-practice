@@ -1,3 +1,4 @@
+import { User } from 'src/auth/user.entity';
 import { EntityRepository, Repository } from 'typeorm';
 import { Board } from './board.entity';
 import { BoardStatus } from './boards-status.enum';
@@ -7,13 +8,17 @@ import { CreateBoardDto } from './dto/create-board.dto';
 
 @EntityRepository(Board)
 export class BoardRepository extends Repository<Board> {
-  async createBoard(createBoardDto: CreateBoardDto): Promise<Board> {
+  async createBoard(
+    createBoardDto: CreateBoardDto,
+    user: User,
+  ): Promise<Board> {
     const { title, description } = createBoardDto;
     //NOTE: 보드 객체생성
     const board = this.create({
       title,
       description,
       status: BoardStatus.PUBLIC,
+      user,
     });
     //NOTE: 저장
     await this.save(board);

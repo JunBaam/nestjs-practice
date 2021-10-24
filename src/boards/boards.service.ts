@@ -5,6 +5,7 @@ import { CreateBoardDto } from './dto/create-board.dto';
 import { BoardRepository } from './board.repository';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Board } from './board.entity';
+import { User } from 'src/auth/user.entity';
 
 @Injectable()
 export class BoardsService {
@@ -14,13 +15,20 @@ export class BoardsService {
     private boardRepository: BoardRepository,
   ) {}
 
-  async getAllBoards(): Promise<Board[]> {
-    return this.boardRepository.find();
+  async getAllBoards(user: User): Promise<Board[]> {
+    //NOTE: query 작성 , 해당유저의 게시물만 가져오기
+
+    const query = this.boardRepository.createQueryBuilder('board');
+    query.where('board.userId = :userId', { userId: user.id });
+
+    const boards = await query.getMany();
+    // return this.boardRepository.find();
+    return boards;
   }
 
-  createBoard(createBoardDto: CreateBoardDto): Promise<Board> {
+  createBoard(createBoardDto: CreateBoardDto, user: User): Promise<Board> {
     //NOTE: DB 관련로직을 repository 에서 처리후 리턴한다.
-    return this.boardRepository.createBoard(createBoardDto);
+    return this.boardRepository.createBoard(createBoardDto, user);
   }
 
   async getBoardById(id: number): Promise<Board> {
@@ -33,8 +41,9 @@ export class BoardsService {
 
   //NOTE: 리턴값이 없으므로 void
   //NOTE: 몇개를 지웠는지 (영향을주었는지) affected 로 표기
-  async deleteBoard(id: number): Promise<void> {
-    const result = await this.boardRepository.delete(id);
+  async deleteBoard(id: number, user: User): Promise<void> {
+    //NOTE: 게시물 작성자만 게시물을 지울수있게 .
+    const result = await this.boardRepository.delete({ id, user: user });
     if (result.affected === 0) {
       throw new NotFoundException('없는 id 랑 꼐');
     }
