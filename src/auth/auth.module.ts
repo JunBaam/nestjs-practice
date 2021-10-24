@@ -6,8 +6,9 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './jwt.strategy';
 import { UserRepository } from './user.repository';
+import * as config from 'config';
 
-// const jwtConfig = config.get('jwt');
+const jwtConfig = config.get('jwt');
 
 @Module({
   //NOTE: Repository 연결
@@ -15,11 +16,9 @@ import { UserRepository } from './user.repository';
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.register({
       //NOTE: Jwt secret text
-      // secret: process.env.JWT_SECRET || jwtConfig.secret,
-      secret: 'Secret1234',
+      secret: process.env.JWT_SECRET || jwtConfig.secret,
       signOptions: {
-        // expiresIn: jwtConfig.expiresIn,
-        expiresIn: 3600,
+        expiresIn: jwtConfig.expiresIn,
       },
     }),
     TypeOrmModule.forFeature([UserRepository]),
