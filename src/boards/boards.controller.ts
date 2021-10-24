@@ -7,9 +7,11 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  UseGuards,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { Board } from './board.entity';
 import { BoardStatus } from './boards-status.enum';
 import { BoardsService } from './boards.service';
@@ -17,6 +19,7 @@ import { CreateBoardDto } from './dto/create-board.dto';
 import { BoardStatusValidationPipe } from './pipes/board-status-validation.pipe';
 
 @Controller('boards')
+@UseGuards(AuthGuard())
 export class BoardsController {
   // NOTE: private(접근제한자) 선언시 암묵적으로 property 로 선언된다
   constructor(private boardsService: BoardsService) {}
